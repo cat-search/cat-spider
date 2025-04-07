@@ -24,7 +24,7 @@ class Checkpoint(Base):
     __tablename__ = 't_checkpoint'
     __table_args__ = (
         {
-            'schema': 'md',
+            'schema': 'meta',
         },
     )
 

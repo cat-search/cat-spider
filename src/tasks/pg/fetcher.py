@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, Session
 
 from src.common.log import logger
 from sqlalchemy import create_engine, MetaData, Table, select, func
-from src.models.vk_public import Site
+from src.models.vk_cms import Site
 from src.common.settings import settings
 
 
@@ -34,6 +34,7 @@ def get_sites_site(stats: dict) -> None:
     for i, row in enumerate(session.execute(query).yield_per(settings.chunk_size)):
         row_data = row[0]
         logger.info(f"{i}, {row_data.id}")
+
     # Execute the query
     # with engine.connect() as conn:
     #     result = conn.execute(query)
