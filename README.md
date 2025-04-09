@@ -1,8 +1,10 @@
 # cat-spider
 
 pg:
-- fetcher
-- import
+- import_sites
+- import_pages
+- fetch_files
+- import_files
 
 storage:
 - fetcher
@@ -194,27 +196,4 @@ select s.id as s_id, so."name" as so_name, so.external_id
  inner join sites s on so.site_id = s.id
 where so.type in ('page', 'filestorage', 'list')
 )
-```
-
-
-```sql
-SELECT public.pages_page.id AS page_id,
-       public.pages_page.name,
-       public.pages_page.body,
-       public.pages_page.views_count,
-       public.pages_page.created_at,
-       public.pages_page.created_by_id,
-       public.pages_page.updated_at,
-       public.pages_page.updated_by_id,
-       public.sites_serviceobject.site_id,
-       public.sites_serviceobject.type
-FROM public.pages_page
-       JOIN public.sites_serviceobject
-            ON CAST(uuid(public.sites_serviceobject.external_id) AS UUID) = public.pages_page.id
-WHERE public.sites_serviceobject.id IN 
-      ('83f29091-def2-42a4-82c4-453103d8a457', '3d2d628c-0b80-470d-a9fc-f19b353971b7',
-                                        'b7a8428a-9f61-46ff-9fcf-f835a577e1e3', '023540f1-15d1-411d-b2c5-3d596089654b',
-                                        '0f11f06b-1c6c-41a8-b30b-1061ce626391', '6d111c1d-5d0f-406c-a1e1-74fb2a8acc1d',
-                                        '3b508b32-4c04-4a22-bc4f-94e4bd9f0bdb')
-
 ```
