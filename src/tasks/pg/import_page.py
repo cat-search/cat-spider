@@ -1,18 +1,14 @@
 from collections import defaultdict
 
-from bson.binary import UuidRepresentation
-from bson.codec_options import CodecOptions
-from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
-from sqlalchemy import select, func, cast, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import select, cast, Text
 
 from src.common.db import DbConnManager
 from src.common.log import logger
 from src.common.mongo import init_mongo
 from src.common.settings import settings
 from src.common.utils import get_stats
-from src.models.vk_cms import Site, SiteServiceObject, Page, SiteStatus
+from src.models.vk_cms import SiteServiceObject, Page
 
 
 def import_page(stats: dict) -> None:
