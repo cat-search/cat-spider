@@ -7,6 +7,9 @@ from src.common.settings import settings
 
 
 def init_mongo(collection: str) -> Collection:
+    """
+    Initialize MongoDB client, db, collection
+    """
     client = MongoClient(
         host=settings.mongo_host,
         port=settings.mongo_port,
