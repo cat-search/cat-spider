@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     mongo_host: str                   = '127.0.0.1'
     mongo_port: int                   = 27017
-    mongo_db_name: str                = 'raw'
+    mongo_db_name: str                = 'cat'
     mongo_collection_site: str        = 'site'
     mongo_collection_page: str        = 'page'
     mongo_collection_list: str        = 'list'
