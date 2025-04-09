@@ -8,6 +8,7 @@ from sqlalchemy import select, func
 
 from src.common.db import DbConnManager
 from src.common.log import logger
+from src.common.mongo import init_mongo
 from src.common.settings import settings
 from src.common.utils import get_stats
 from src.models.vk_cms import Site
@@ -41,16 +42,8 @@ def import_site(stats: dict) -> None:
         ).execution_options(stream_results=True)    # Streaming for chunking
 
         # Initialize MongoDB client, db, collection
-        client = MongoClient(
-            host=settings.mongo_host,
-            port=settings.mongo_port,
-        )
-        db = client.get_database(settings.mongo_db_name)
-        python_opts = CodecOptions(uuid_representation=UuidRepresentation.PYTHON_LEGACY)
-        coll = db.get_collection(
-            settings.mongo_collection_site,
-            codec_options=python_opts,
-        )
+        coll = init_mongo(settings.mongo_collection_site)
+
         # Iterate over rows
         for i, row in enumerate(conn.execute(query).yield_per(settings.chunk_size)):
             # row_data = row[0]
@@ -59,14 +52,18 @@ def import_site(stats: dict) -> None:
                 doc = {
                     # _id in MongoDB - unique identifier
                     # We will use site_id as _id
-                    '_id': row.id,
-                    'name': row.name,
-                    'created_by_id': row.created_by_id,
-                    'created_at': row.created_at,
-                    'updated_by_id': row.updated_by_id,
-                    'updated_at': row.updated_at,
+                    '_id'           : row.id,               # site_id
+                    'name'          : row.name,             # site name
+                    'created_by_id' : row.created_by_id,    # user id
+                    'created_at'    : row.created_at,
+                    'updated_by_id' : row.updated_by_id,    # user id
+                    'updated_at'    : row.updated_at,
                 }
-                coll.insert_one(doc)    # Insert document into MongoDB
+
+                # TODO: Here we can insert into vector db directly
+
+                # Insert document into MongoDB
+                coll.insert_one(doc)
                 stats['site']['inserted'] += 1
             # Duplicated _id (site_id) in MongoDB
             except DuplicateKeyError:
