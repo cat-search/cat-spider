@@ -97,7 +97,6 @@ class Page(Base):
         {
             'schema': 'public',
             'info': {'skip_autogenerate': True},  # Skip in alembic migrations
-
         }
     )
 
@@ -128,13 +127,13 @@ class Page(Base):
     # Дата создания
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     # Пользователь-создатель
-    created_by_id = Column(UUID(as_uuid=True), ForeignKey('public.users.keycloak_id', ondelete='CASCADE'))
+    created_by_id = Column(UUID(as_uuid=True))  # , ForeignKey('public.users.keycloak_id', ondelete='CASCADE'))
     # Дата обновления
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True))  #, onupdate=func.now())
     # Последний редактор
-    updated_by_id = Column(UUID(as_uuid=True), ForeignKey('public.users.keycloak_id', ondelete='CASCADE'))
+    updated_by_id = Column(UUID(as_uuid=True))  #, ForeignKey('public.users.keycloak_id', ondelete='CASCADE'))
     # FK на родительскую страницу
-    parent_id = Column(UUID(as_uuid=True), ForeignKey('public.pages_page.id', ondelete='SET NULL'))
+    parent_id = Column(UUID(as_uuid=True))  # , ForeignKey('public.pages_page.id', ondelete='SET NULL'))
     # Generated columns (PostgreSQL specific)
     ts_vector_name = Column(
         TSVECTOR,
