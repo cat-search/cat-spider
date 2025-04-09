@@ -151,3 +151,23 @@ class Page(Base):
         ),
         # persisted=True
     )
+
+
+class SiteServiceObject(Base):
+    __tablename__ = 'sites_serviceobject'
+    __table_args__ = (
+        {
+            'schema': 'public',
+            'info': {'skip_autogenerate': True},  # Skip in alembic migrations
+        }
+    )
+
+    id            = Column(UUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4())
+    name          = Column(String(150), nullable=False)
+    slug          = Column(String, nullable=False)
+    type          = Column(String(20), nullable=False)
+    navbar_order  = Column(Integer, nullable=True)
+    additional    = Column(JSON, nullable=False)
+    external_id   = Column(String(50), nullable=True)
+    site_id       = Column(UUID(as_uuid=True), ForeignKey('public.sites_site.id', ondelete='CASCADE'), nullable=False)
+    parent_id     = Column(UUID(as_uuid=True), ForeignKey('public.sites_serviceobject.id', ondelete='SET NULL'), nullable=True)
