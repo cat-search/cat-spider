@@ -4,19 +4,23 @@ from collections import defaultdict
 import requests
 from sqlalchemy import select, and_
 
-from src.common.db import DbConnManager
+from src.common.db import DbConnManager, file_register, file_set_status
 from src.common.log import logger
 from src.common.mongo import init_mongo
 from src.common.settings import settings
 from src.common.utils import get_stats
 from src.models.vk_filestorage import StorageObject, StorageVersion
+from src.models.cat_meta import Status
 
 
 def download(stats: dict) -> None:
     """
     ...
     """
-    with DbConnManager(settings.vk_db_conn_str_filestorage) as conn:
+    with (
+        DbConnManager(settings.vk_db_conn_str_filestorage) as vk_conn,
+        DbConnManager(settings.db_conn_str) as cat_conn
+    ):
         query = select(
             StorageObject.id,
             StorageObject.name,                # filename
@@ -45,19 +49,22 @@ def download(stats: dict) -> None:
         os.mkdir(settings.download_dir) if not os.path.exists(settings.download_dir) else None
 
         # Iterate over rows and download file one by one
-        for i, row in enumerate(conn.execute(query).yield_per(settings.chunk_size)):
+        for i, row in enumerate(vk_conn.execute(query).yield_per(settings.chunk_size)):
             logger.info(f"{i}, {row.id}, {row.name}, {row.link}")
             url: str = f"{settings.filestorage_url}/{row.link}"
+            filename: str = f"{settings.download_dir}/{row.name}"
+            file_register(cat_conn, row, filename, Status.new.value)
+
             # download file
             with requests.session() as session:
                 logger.info(msg := f"Downloading file: {url} ...")
                 response = session.get(url, stream=True)
                 if response.status_code == 200:
-                    filename: str = f"{settings.download_dir}/{row.name}"
                     with open(filename, 'wb') as f:
                         for chunk in response.iter_content(chunk_size=8192):
                             f.write(chunk)
                     logger.info(f"{msg} done")
+                    file_set_status(cat_conn, row.id, Status.downloaded.value)
                     stats['file']['downloaded'] += 1
                 else:
                     raise AssertionError(f"Failed to download file: {url}")
