@@ -38,3 +38,11 @@ def timeit(func) -> Callable:
         return result, end - start
 
     return wrapped
+
+
+def prepare_doc(doc: dict) -> dict:
+    doc = {
+        k: str(v) for k, v in doc.items()
+        if v is not None and not isinstance(v, (list, dict))
+    }
+    return doc
