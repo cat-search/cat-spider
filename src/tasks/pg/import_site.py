@@ -1,18 +1,16 @@
 from collections import defaultdict
 
-from sqlalchemy.orm import sessionmaker, Session
-from pymongo import MongoClient
-from pymongo.errors import DuplicateKeyError
 from bson.binary import UuidRepresentation
 from bson.codec_options import CodecOptions
+from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
+from sqlalchemy import select, func
 
+from src.common.db import DbConnManager
 from src.common.log import logger
-from sqlalchemy import create_engine, MetaData, Table, select, func
-
+from src.common.settings import settings
 from src.common.utils import get_stats
 from src.models.vk_cms import Site
-from src.common.settings import settings
-from src.common.db import DbConnManager
 
 
 def import_site(stats: dict) -> None:
