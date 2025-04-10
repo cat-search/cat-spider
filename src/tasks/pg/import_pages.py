@@ -1,4 +1,5 @@
 from collections import defaultdict
+from pprint import pformat
 
 from pymongo.errors import DuplicateKeyError
 from sqlalchemy import select, cast, Text
@@ -60,21 +61,25 @@ def import_page(stats: dict) -> None:
                 'site_id': row.site_id,
                 'type': row.type,  # page all
             }
+            stats['page']['read'] += 1
             try:
                 # Insert document into MongoDB
                 coll.insert_one(doc)
-                stats['site']['inserted'] += 1
+                stats['mongo']['inserted'] += 1
                 # Duplicated _id (site_id) in MongoDB
             except DuplicateKeyError:
-                stats['site']['duplicate_key_error'] += 1
+                stats['mongo']['duplicate_key_error'] += 1
 
             # TODO: Here we can insert into vector db directly
             # Insert into VectorDB
-            idx.add_documents(
+            result = idx.add_documents(
                 [prepare_doc(doc)],
                 tensor_fields=['name', 'body']
             )
-            stats['site']['vectordb_inserted'] += 1
+            stats['vectordb']['inserted'] += 1
+            logger.info(f"Inserted into VectorDB: {result}")
+
+        logger.info(f"index stats:\n{pformat(idx.get_stats())}")
 
 
 @logger.catch(reraise=True)
@@ -83,7 +88,9 @@ def main():
 
     # Statistics
     stats: dict = {
-        'site': defaultdict(int),
+        'page': defaultdict(int),
+        'vectordb': defaultdict(int),
+        'mongo': defaultdict(int),
     }
 
     import_page(stats)

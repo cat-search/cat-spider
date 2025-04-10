@@ -18,13 +18,14 @@ class SpiderFile(Base):
     __table_args__ = (
         {
             'schema': 'meta',
+            'comment': 'Учет файлов из хранилища filestorage',
         },
     )
-    storage_object_id        = Column(UUID, primary_key=True, comment='filestorage.storage_object.id')
-    storage_object_name      = Column(TEXT, comment='filestorage.storage_object.name')
-    storage_object_site_id   = Column(TEXT, comment='filestorage.storage_object.site_id')
-    storage_version_size     = Column(TEXT, comment='filestorage.storage_version.size')
-    storage_version_link     = Column(TEXT, comment='filestorage.storage_version.link')
+    storage_object_id        = Column(UUID, primary_key=True, comment='id из filestorage.storage_object.id')
+    storage_object_name      = Column(TEXT, comment='Имя из filestorage.storage_object.name')
+    storage_object_site_id   = Column(TEXT, comment='id из filestorage.storage_object.site_id')
+    storage_version_size     = Column(TEXT, comment='Размер из filestorage.storage_version.size')
+    storage_version_link     = Column(TEXT, comment='Ссылка из filestorage.storage_version.link')
 
     create_ts                = Column(TIMESTAMP, default=datetime.now(UTC))
     target_path              = Column(VARCHAR(1024), comment='file path')
