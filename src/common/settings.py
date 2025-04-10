@@ -45,6 +45,13 @@ class Settings(BaseSettings):
     marqo_api_key: str                  = ""
     marqo_model: str                    = "hf/e5-base-v2"
     marqo_index_page: str               = "page_20250409_valer"
+    marqo_index_settings: dict          = {
+        "textPreprocessing": {
+            "splitLength": 2,
+            "splitOverlap": 0,
+            "splitMethod": "sentence",
+        },
+    }
 
 
 settings = Settings()
