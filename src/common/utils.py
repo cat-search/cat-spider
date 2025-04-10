@@ -1,10 +1,11 @@
 import json
 import time
 from collections.abc import Callable
-
+from hashlib import md5
 from markdownify import markdownify as md
 
 from src.common.log import logger
+from src.common.settings import settings
 
 
 def get_stats(
@@ -58,3 +59,13 @@ def decode_html2text(html_text: str) -> str:
     # plain_text = soup.get_text(separator='\n', strip=True)
     result_text = md(html_text)  # HTML to Markdown
     return result_text
+
+
+def make_storage_url(file_link: str) -> str:
+    return f"{settings.filestorage_url}/{file_link}"
+
+
+def make_hash(object_id, page, paragraph) -> str:
+    return md5(
+        f"{str(object_id).replace('-', '')}{page}{paragraph}"
+    ).hexdigest()
