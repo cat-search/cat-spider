@@ -10,14 +10,14 @@ from src.common.mongo import init_mongo
 from src.common.settings import settings
 from src.common.utils import get_stats, prepare_doc, decode_html2text
 from src.common.vectordb import init_marqo
-from src.models.vk_cms import SiteServiceObject, Page
+from src.models.vk_cms import SiteServiceObject, Page, Site
 
 
 def import_page(stats: dict) -> None:
     """
     Import pages_page table from DB.
     """
-    with DbConnManager(settings.vk_db_conn_str_cms) as conn:
+    with (DbConnManager(settings.vk_db_conn_str_cms) as conn):
         # Query pages_page + site_service_object
         query = select(
             Page.id.label('page_id'),  # id страницы
@@ -29,11 +29,15 @@ def import_page(stats: dict) -> None:
             Page.updated_at,
             Page.updated_by_id,
             SiteServiceObject.site_id,
+            Site.name.label('site_name'),                 # site name
             SiteServiceObject.type                        # page all
             # TODO: We need to add link to the site here
         ).join(
             SiteServiceObject,
             SiteServiceObject.external_id == cast(Page.id, Text),
+        ).join(
+            Site,
+            Site.id == SiteServiceObject.site_id,
         ).where(
             SiteServiceObject.site_id.in_(settings.site_ids),  # Our sites
         ).execution_options(stream_results=True)          # Streaming for chunking
@@ -60,6 +64,7 @@ def import_page(stats: dict) -> None:
                 'created_by_id': row.created_by_id,
                 'updated_at': row.updated_at,
                 'updated_by_id': row.updated_by_id,
+                'site_name': row.site_name,         # site name
                 'site_id': row.site_id,
                 'type': row.type,                   # type page
             }

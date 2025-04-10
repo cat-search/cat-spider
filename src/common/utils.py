@@ -51,6 +51,9 @@ def prepare_doc(doc: dict) -> dict:
 
 
 def decode_html2text(html_text: str) -> str:
+    """
+    HTML >> Markdown
+    """
     # soup = BeautifulSoup(html_text, "lxml")
     # plain_text = soup.get_text(separator='\n', strip=True)
     result_text = md(html_text)  # HTML to Markdown
