@@ -15,7 +15,9 @@ dependencies = [
     "alembic (>=1.15.2,<2.0.0)",
     "sqlalchemy-utils (>=0.41.2,<0.42.0)",
     "aspose-words (>=25.3.0,<26.0.0)",
-    "python-docx (>=1.1.2,<2.0.0)"
+    "python-docx (>=1.1.2,<2.0.0)",
+    "bs4 (>=0.0.2,<0.0.3)",
+    "markdownify (>=1.1.0,<2.0.0)"
 ]
 
 
