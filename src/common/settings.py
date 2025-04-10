@@ -40,9 +40,9 @@ class Settings(BaseSettings):
     download_dir: str                   = '/opt/catsearch/download'
 
     # Vector DB. Marqo
-    marqo_url: str                      = "http://cat-vm2.v6.rocks:8080"
-    marqo_user: str                     = "place_user_here"
-    marqo_password: str                 = "place_password_here"
+    marqo_url: str                      = "http://cat-vm2.v6.rocks:8081"
+    marqo_user: str                     = "admin"
+    marqo_api_key: str                  = ""
     marqo_model: str                    = "hf/e5-base-v2"
     marqo_index_page: str               = "page_20250409_valer"
 
