@@ -8,7 +8,7 @@ from src.common.db import DbConnManager
 from src.common.log import logger
 from src.common.mongo import init_mongo
 from src.common.settings import settings
-from src.common.utils import get_stats, prepare_doc
+from src.common.utils import get_stats, prepare_doc, decode_html2text
 from src.common.vectordb import init_marqo
 from src.models.vk_cms import SiteServiceObject, Page
 
@@ -48,18 +48,20 @@ def import_page(stats: dict) -> None:
         # Iterate over rows
         for i, row in enumerate(conn.execute(query).yield_per(settings.chunk_size)):
             logger.info(f"{i}, {row.page_id}, {row.name}")
+            raw_data = row.body['data']
+            data = decode_html2text(raw_data)
             doc: dict = {
                 # _id in MongoDB - unique identifier
-                '_id': row.page_id,  # We will use page_id as _id
+                '_id': row.page_id,                 # We will use page_id as _id
                 'name': row.name,
-                'body': row.body,  # содержимое страницы
-                'views_count': row.views_count,  # Кол-во просмотров
+                'data': data,                       # содержимое страницы
+                'views_count': row.views_count,     # Кол-во просмотров
                 'created_at': row.created_at,
                 'created_by_id': row.created_by_id,
                 'updated_at': row.updated_at,
                 'updated_by_id': row.updated_by_id,
                 'site_id': row.site_id,
-                'type': row.type,  # page all
+                'type': row.type,                   # type page
             }
             stats['page']['read'] += 1
             try:
@@ -72,12 +74,13 @@ def import_page(stats: dict) -> None:
 
             # TODO: Here we can insert into vector db directly
             # Insert into VectorDB
+            prepared_doc = prepare_doc(doc)
             result = idx.add_documents(
-                [prepare_doc(doc)],
+                [prepared_doc],
                 tensor_fields=['name', 'body']
             )
             stats['vectordb']['inserted'] += 1
-            logger.info(f"Inserted into VectorDB: {result}")
+            logger.info(f"Inserted: {len(raw_data)}, {len(data)}, {result}")
 
         logger.info(f"index stats:\n{pformat(idx.get_stats())}")
 

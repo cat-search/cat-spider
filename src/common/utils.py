@@ -1,8 +1,10 @@
-import csv
 import json
 import time
-from src.common.log import logger
 from collections.abc import Callable
+
+from markdownify import markdownify as md
+
+from src.common.log import logger
 
 
 def get_stats(
@@ -46,3 +48,10 @@ def prepare_doc(doc: dict) -> dict:
         if v is not None and not isinstance(v, (list, dict))
     }
     return doc
+
+
+def decode_html2text(html_text: str) -> str:
+    # soup = BeautifulSoup(html_text, "lxml")
+    # plain_text = soup.get_text(separator='\n', strip=True)
+    result_text = md(html_text)  # HTML to Markdown
+    return result_text
