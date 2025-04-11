@@ -41,6 +41,10 @@ def init_marqo(
         index_settings = settings.marqo_index_settings
         index_settings['model'] = settings.marqo_model
         logger.info(f"settings:\n{pformat(settings.marqo_index_settings)}")
-        mq.create_index(index, settings_dict=index_settings)
+        mq.create_index(
+            index,
+            settings_dict=index_settings,
+            wait_for_readiness=False,       # To avoid failure on create_index
+        )
         logger.info(f"{msg} done")
     return mq
