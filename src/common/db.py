@@ -1,15 +1,17 @@
 import traceback
 from typing import Union
+from collections.abc import Iterable
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Row
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import Query
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.sql import Delete
+from sqlalchemy.orm import Query, Session, sessionmaker
+from sqlalchemy.sql import Delete, select
 
 from src.common.log import logger
+from src.common.settings import settings
 from src.models.cat_meta import SpiderFile
 from src.models.vk_filestorage import StorageObject, StorageVersion
+from src.models.vk_cms import Site
 
 
 class DbConnManager:
@@ -82,4 +84,21 @@ def file_set_status(conn: DbConnManager, file_id: str, status_id: int) -> None:
         )
         conn.commit()
 
+
+def get_sites(full: bool = True) -> Iterable[Row]:
+    with (DbConnManager(settings.vk_db_conn_str_cms) as conn):
+        query = select(
+            Site.id,
+            Site.name,
+            Site.created_by_id,
+            Site.created_at,
+            Site.updated_by_id,
+            Site.updated_at,
+        )
+        if not full:
+            query = query.where(
+                Site.id.in_(settings.site_ids),
+            )
+        sites = conn.session.execute(query).all()
+        return sites
 
