@@ -102,3 +102,10 @@ def get_sites(full: bool = True) -> Iterable[Row]:
         sites = conn.session.execute(query).all()
         return sites
 
+
+def compile_sql(query: Union[type[Query], type[Delete]]):
+    if isinstance(query, Query):
+        return str(query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}))
+    else:
+        return str(query.compile(dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}))
+
