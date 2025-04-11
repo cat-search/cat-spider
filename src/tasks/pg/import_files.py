@@ -40,8 +40,7 @@ def parse_doc(file: SpiderFile, stats: dict) -> list[dict] | None:
         logger.error(
             msg := (
                 "Error: antiword is required but not installed. Install with:\n"
-                "sudo apt-get install antiword  # Debian/Ubuntu\n"
-                "brew install antiword          # macOS"
+                "sudo apt-get install antiword"
             )
         )
         raise AssertionError(msg)
