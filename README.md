@@ -6,11 +6,6 @@ pg:
 - fetch_files
 - import_files
 
-storage:
-- fetcher
-- import
-
-
 # Research  
 
 - 1. Get sites
