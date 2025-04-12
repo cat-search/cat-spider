@@ -1,43 +1,64 @@
 from datetime import datetime, UTC
+from enum import Enum
 
 from sqlalchemy import (
     Column,
-    String,
-    Boolean,
-    DateTime,
-    ForeignKey,
-    Index,
-    UniqueConstraint,
-    Integer,
 )
-from sqlalchemy.dialects.postgresql import UUID, VARCHAR, BIGINT, SMALLINT, TIMESTAMP
-from sqlalchemy.sql import func, select, Select, desc
-from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import (
+    UUID, VARCHAR, SMALLINT, TIMESTAMP, TEXT,
+)
 from sqlalchemy.ext.declarative import declarative_base
-
-from src.common.db import DbConnManager
 
 Base = declarative_base()
 
 
-class Checkpoint(Base):
-    __tablename__ = 't_checkpoint'
+class SpiderFile(Base):
+    """ Учет файлов из хранилища """
+    __tablename__ = 'spider_file'
     __table_args__ = (
         {
             'schema': 'meta',
+            'comment': 'Учет файлов из хранилища filestorage',
         },
     )
+    storage_object_id        = Column(UUID, primary_key=True, comment='id из filestorage.storage_object.id')
+    storage_object_name      = Column(TEXT, comment='Имя из filestorage.storage_object.name')
+    storage_object_site_id   = Column(TEXT, comment='id из filestorage.storage_object.site_id')
+    storage_version_size     = Column(TEXT, comment='Размер из filestorage.storage_version.size')
+    storage_version_link     = Column(TEXT, comment='Ссылка из filestorage.storage_version.link')
 
-    id = Column(BIGINT, primary_key=True)
-    ts = Column(TIMESTAMP, default=datetime.now(UTC))
+    create_ts                = Column(TIMESTAMP, default=datetime.now(UTC))
+    target_path              = Column(VARCHAR(1024), comment='file path')
+    status_id                = Column(SMALLINT, default=0, comment='0 - new, 1 - downloaded, 2 - parsed, 3 - vectorized')
 
-    @classmethod
-    def log(cls, conn):
-        return conn.persist_add(cls())
 
-    @classmethod
-    def get_last(cls, conn: DbConnManager) -> datetime:
-        query = select(cls.ts).order_by(desc(cls.id)).limit(1)
-        ts = conn.session.scalar(query)
+class Status(str, Enum):
+    """ Статусы файлов """
+    new         = 0
+    downloaded  = 1
+    parsed      = 2
+    done        = 3
+    error       = 4
 
-        return ts if ts else datetime.fromtimestamp(0)
+
+# class Checkpoint(Base):
+#     __tablename__ = 't_checkpoint'
+#     __table_args__ = (
+#         {
+#             'schema': 'meta',
+#         },
+#     )
+#
+#     id = Column(BIGINT, primary_key=True)
+#     ts = Column(TIMESTAMP, default=datetime.now(UTC))
+#
+#     @classmethod
+#     def log(cls, conn):
+#         return conn.persist_add(cls())
+#
+#     @classmethod
+#     def get_last(cls, conn: DbConnManager) -> datetime:
+#         query = select(cls.ts).order_by(desc(cls.id)).limit(1)
+#         ts = conn.session.scalar(query)
+#
+#         return ts if ts else datetime.fromtimestamp(0)

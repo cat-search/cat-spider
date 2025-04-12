@@ -12,7 +12,8 @@ class Settings(BaseSettings):
     vk_db_conn_str_cms: str           = 'postgresql://postgres:postgres@localhost:5433/cms'
     vk_db_conn_str_filestorage: str   = 'postgresql://postgres:postgres@localhost:5433/filestorage'
     vk_db_conn_str_lists: str         = 'postgresql://postgres:postgres@localhost:5433/lists'
-    cat_db_conn_str: str              = 'postgresql://postgres:postgres@localhost:5433/catsearch'
+    db_conn_str: str                  = 'postgresql://postgres:postgres@localhost:5433/catsearch'
+    alembic_db_name: str              = 'catspider'
 
     mongo_host: str                   = '127.0.0.1'
     mongo_port: int                   = 27017
@@ -39,11 +40,19 @@ class Settings(BaseSettings):
     download_dir: str                   = '/opt/catsearch/download'
 
     # Vector DB. Marqo
-    marqo_url: str                      = "http://cat-vm2.v6.rocks:8080"
-    marqo_user: str                     = "place_user_here"
-    marqo_password: str                 = "place_password_here"
+    marqo_url: str                      = "http://cat-vm2.v6.rocks:8081"
+    marqo_user: str                     = "admin"
+    marqo_api_key: str                  = ""
     marqo_model: str                    = "hf/e5-base-v2"
+    # marqo_model: str                    = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
     marqo_index_page: str               = "page_20250409_valer"
+    marqo_index_settings: dict          = {
+        "textPreprocessing": {
+            "splitLength": 2,
+            "splitOverlap": 0,
+            "splitMethod": "sentence",
+        },
+    }
 
 
 settings = Settings()
