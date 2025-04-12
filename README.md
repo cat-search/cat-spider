@@ -1,20 +1,48 @@
-# cat-spider
+# Overview
 
-pg:
-- import_sites
-- import_pages
-- fetch_files
-- import_files
+Проект для импорта данных из БД ВК
 
-# Research  
+# Tasks
 
-- 1. Get sites
-- 2. Get site objects
-  - Get pages
-  - Get files
-  - Get lists
-- 3. Download files
-- 4. Parse files
+Tasks:
+- import_sites:  Импорт сайтов из БД ВК в векторную БД.
+- import_pages:  Импорт страниц сайтов из БД ВК в векторную БД.
+- fetch_files:   Скачивание файлов на локальную файловую систему.
+- import_files:  Парсинг скачанных файлов и импорт текста в векторную БД.
+
+# Структура
+
+```text
+.
+├── doc                             # Документация
+├── src
+│   ├── common                      # Общие утилиты и модули
+│   │   ├── db.py                   # Работа с Postgresql
+│   │   ├── log.py                  # Логирование
+│   │   ├── mongo.py                # Работа с MongoDB
+│   │   ├── settings.py             # Настройки проекта
+│   │   ├── utils.py                # Общие утилиты
+│   │   └── vectordb.py             # Работа с векторными БД
+│   ├── migrations                  # папка Alembic 
+│   │   ├── versions                # Миграции БД postgresql
+│   │   ├── env.py                  # Alembic configuration
+│   │   └── script.py.mako          # 
+│   ├── models                      # Модели sqlalchemy для postgresql
+│   │   ├── base.py                 # Базовые модели
+│   │   ├── cat_meta.py             # Модели нашей БД catsearch
+│   │   ├── vk_cms.py               # Модели БД VK cms
+│   │   ├── vk_filestorage.py       # Модели БД VK filestorage 
+│   │   └── vk_lists.py             # Модели БД VK lists
+│   ├── notebook                    # Jupyter notebooks
+│   └── tasks                       # Основный таски, выполняющие импорт 
+├── alembic.ini                     # Alembic configuration
+├── poetry.lock                     # poetry
+├── pyproject.toml                  # poetry
+└── README.md                       # Основной ридми парсера
+
+```
+
+# Запросы данных
 
 ## 1. Get sites
 
