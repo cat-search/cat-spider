@@ -2,6 +2,8 @@ import subprocess
 from collections import defaultdict
 from pprint import pformat
 
+import pandas as pd
+import PyPDF2
 from pymongo.errors import DuplicateKeyError
 from sqlalchemy import select
 
@@ -9,9 +11,8 @@ from src.common.db import DbConnManager, get_sites, get_storage_object
 from src.common.log import logger
 from src.common.mongo import init_mongo, mongo_insert
 from src.common.settings import settings
-from src.common.utils import (
-    get_stats, make_storage_url, prepare_doc, write_text_file,
-)
+from src.common.utils import (get_stats, make_storage_url, prepare_doc,
+                              write_text_file)
 from src.common.vectordb import init_marqo
 from src.models.cat_meta import SpiderFile, Status
 from src.models.vk_filestorage import StorageObject
@@ -50,7 +51,65 @@ def parse_doc(file: SpiderFile, stats: dict) -> str:
             )
         )
         raise AssertionError(msg)
+    
+    return full_text
 
+def parse_pdf(file: SpiderFile, stats: dict) -> str:
+    """
+    Extracts structured text from .pdf files with page numbers and paragraphs.
+    Uses PyPDF2 to extract text from PDF files.
+    """
+    file_name: str = file.storage_object_name
+    file_path: str = file.target_path
+    logger.info(msg := f"Parsing PDF file: {file_path} ...")
+    if file_name not in stats:
+        stats[file_name] = defaultdict(int)
+    stats = stats[file_name]
+    
+    try:
+        # Open PDF file and read it using PyPDF2
+        with open(file_path, 'rb') as pdf_file:
+            reader = PyPDF2.PdfReader(pdf_file)
+            full_text = ""
+            for page_num, page in enumerate(reader.pages):
+                # Extract text from each page
+                text = page.extract_text()
+                if text:
+                    full_text += f"Page {page_num + 1}:\n{text}\n\n"
+            if not full_text:
+                raise AssertionError("No text extracted from PDF.")
+    except Exception as e:
+        logger.error(msg := f"Error parsing PDF file: {e}")
+        raise AssertionError(msg)
+
+def parse_excel(file: SpiderFile, stats: dict) -> str:
+    """
+    Extracts structured text from .xlsx (Excel) files with sheet names and data.
+    Uses pandas to read Excel sheets and convert them into string format.
+    """
+    file_name: str = file.storage_object_name
+    file_path: str = file.target_path
+    logger.info(msg := f"Parsing Excel file: {file_path} ...")
+    if file_name not in stats:
+        stats[file_name] = defaultdict(int)
+    stats = stats[file_name]
+    
+    try:
+        # Use pandas to read the Excel file
+        df = pd.read_excel(file_path, sheet_name=None)  # Read all sheets into a dictionary
+        full_text = ""
+        for sheet_name, sheet_data in df.items():
+            full_text += f"Sheet: {sheet_name}\n"
+            full_text += sheet_data.to_string(index=False) + "\n\n"
+        if not full_text:
+            raise AssertionError("No text extracted from Excel.")
+    except Exception as e:
+        logger.error(msg := f"Error parsing Excel file: {e}")
+        raise AssertionError(msg)
+
+    return full_text
+
+#    return full_text
     # Split text into pages using form feed character
     # pages = full_text.split('\x0c')     # It's not working!!!
     # stats['pages'] = len(pages)
@@ -109,12 +168,18 @@ def parse(stats: dict) -> int:
             # 2. Parse file
             if file_type == 'doc':
                 data = parse_doc(file, stats['file'])   # Parse .doc file
-                stats['file'][file_name]['parsed'] = 1
+                if data:
+                    stats['file'][file_name]['parsed'] = 1
+                continue
             elif file_type == 'pdf':
-                ...
+                data = parse_pdf(file.target_path)  # Parse PDF file
+                if data:
+                    stats['file'][file_name]['parsed'] = 1
                 continue
             elif file_type == 'xlsx':
-                ...
+                data = parse_excel(file, stats['file'])  # Parse Excel file
+                if data:
+                    stats['file'][file_name]['parsed'] = 1
                 continue
             else:
                 raise AssertionError(
