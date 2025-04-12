@@ -43,7 +43,7 @@ def download(stats: dict) -> None:
         ).execution_options(stream_results=True)  # Streaming for chunking
 
         # Initialize MongoDB client, db, collection
-        coll = init_mongo(settings.mongo_collection_file)
+        # coll = init_mongo(settings.mongo_collection_file)
 
         # Create download directory if not exists
         os.mkdir(settings.download_dir) if not os.path.exists(settings.download_dir) else None

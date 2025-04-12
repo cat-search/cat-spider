@@ -103,6 +103,23 @@ def get_sites(full: bool = True) -> Iterable[Row]:
         return sites
 
 
+def get_storage_object(storage_object_id: str) -> StorageObject:
+    with (DbConnManager(settings.vk_db_conn_str_filestorage) as conn):
+        query = select(
+            StorageObject,
+            # StorageObject.id,
+            # StorageObject.created_at,
+            # StorageObject.created_by_id,
+            # StorageObject.updated_at,
+            # StorageObject.updated_by_id,
+        ).where(
+            StorageObject.id == storage_object_id,
+        )
+        result: Row = conn.session.execute(query).fetchone()
+        result: StorageObject = result[0]
+        return result
+
+
 def compile_sql(query: Union[type[Query], type[Delete]]):
     if isinstance(query, Query):
         return str(query.statement.compile(dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}))

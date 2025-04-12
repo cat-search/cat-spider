@@ -69,3 +69,15 @@ def make_hash(object_id, page, paragraph) -> str:
     return md5(
         f"{str(object_id).replace('-', '')}{page}{paragraph}"
     ).hexdigest()
+
+
+def write_text_file(file_path: str, data: str, stats: dict) -> str:
+    file_name: str = file_path.rsplit('/', maxsplit=1)[-1]
+    new_filename: str = f"{file_path}.txt"
+    logger.info(f"Writing text to file: {new_filename} ...")
+
+    with open(f"{new_filename}", 'w') as f:
+        f.write(data)
+        stats['fs']['written'] += 1
+    stats['file'][file_name]['text_len'] = len(data)
+    return new_filename
