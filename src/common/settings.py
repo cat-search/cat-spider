@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     vk_db_conn_str_filestorage: str   = 'postgresql://postgres:postgres@localhost:5433/filestorage'
     vk_db_conn_str_lists: str         = 'postgresql://postgres:postgres@localhost:5433/lists'
     db_conn_str: str                  = 'postgresql://postgres:postgres@localhost:5433/catsearch'
-    alembic_db_name: str              = 'catsearch'
+    alembic_db_name: str              = 'catspider'
 
     mongo_host: str                   = '127.0.0.1'
     mongo_port: int                   = 27017
