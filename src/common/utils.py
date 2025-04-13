@@ -79,5 +79,4 @@ def write_text_file(file_path: str, data: str, stats: dict) -> str:
     with open(f"{new_filename}", 'w') as f:
         f.write(data)
         stats['fs']['written'] += 1
-    stats['file'][file_name]['text_len'] = len(data)
     return new_filename
