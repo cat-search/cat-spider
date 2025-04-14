@@ -3,15 +3,21 @@ from collections import defaultdict
 
 import PyPDF2
 import pandas as pd
+from langchain_core.documents import Document
 from sqlalchemy import select
 
 from src.common.db import DbConnManager, get_sites, get_storage_object
 from src.common.log import logger
-from src.common.mongo import init_mongo, mongo_insert
 from src.common.settings import settings
-from src.common.utils import (get_stats, make_storage_url, write_text_file)
+from src.common.utils import (
+    get_stats,
+    make_storage_url,
+    write_text_file,
+    chunkate_text_rcts,
+)
 from src.models.cat_meta import SpiderFile, Status
 from src.models.vk_filestorage import StorageObject
+from src.vectordb.weaviate_vdb import init_weaviate, weaviate_insert
 
 
 def parse_doc(file: SpiderFile, stats: dict) -> str:
@@ -145,11 +151,10 @@ def parse(stats: dict) -> int:
     status_id: tuple = (Status.downloaded.value, Status.error.value)
 
     # Initialize MongoDB client, db, collection
-    coll = init_mongo(settings.mongo_collection_file)
+    # coll = init_mongo(settings.mongo_collection_file)
 
     # Initialize VectorDB client
-    # mq = init_marqo(settings.marqo_index_page)
-    # idx = mq.index(settings.marqo_index_page)
+    wc = init_weaviate()
 
     with DbConnManager(settings.db_conn_str) as cat_conn:
         sites: dict = {
@@ -179,13 +184,13 @@ def parse(stats: dict) -> int:
             # 2. Parse file
             if file_type == 'doc':
                 # continue
-                data = parse_doc(file, stats['file'])   # Parse .doc file
+                content = parse_doc(file, stats['file'])   # Parse .doc file
             elif file_type == 'pdf':
                 # continue
-                data = parse_pdf(file, stats['file'])  # Parse PDF file
+                content = parse_pdf(file, stats['file'])  # Parse PDF file
             elif file_type == 'xlsx':
                 # continue
-                data = parse_excel(file, stats['file'])  # Parse Excel file
+                content = parse_excel(file, stats['file'])  # Parse Excel file
             else:
                 raise AssertionError(
                     f"Unknown file type: {file_type}, {file.storage_object_name}"
@@ -193,11 +198,14 @@ def parse(stats: dict) -> int:
 
             # 3. Let's write whole text to file
             file_path: str = file.target_path
-            write_text_file(file_path, data, stats)
+            write_text_file(file_path, content, stats)
 
-            doc = {
-                '_id'               : f"{file.storage_object_id}",
-                'storage_object_id' : file.storage_object_id,
+            # 4. Chunkate
+            text_chunks: list[Document] = chunkate_text_rcts(content)
+            doc_attrs = {
+                # '_id'               : f"{file.storage_object_id}",
+                'object_id'         : file.storage_object_id,
+                'type'              : 'file',
                 'name'              : file.storage_object_name,
                 'site_id'           : file.storage_object_site_id,
                 'site_name'         : sites[file.storage_object_site_id],
@@ -206,14 +214,15 @@ def parse(stats: dict) -> int:
                 'created_by_id'     : so_attrs.created_by_id,
                 'updated_at'        : so_attrs.updated_at,
                 'updated_by_id'     : so_attrs.updated_by_id,
-                'data'              : data,
                 'link'              : make_storage_url(file.storage_version_link),
             }
 
-            # 4. Insert into vector DB
+            # 5. Insert into vector DB
+            count: int = weaviate_insert(wc, text_chunks, doc_attrs, stats)
+            stats['file'][file_name]['vectordb_inserted'] += count
 
-            # 5. Insert doc into MongoDB
-            mongo_insert(coll, doc, stats)
+            # 6. Insert doc into MongoDB
+            # mongo_insert(coll, text_chunks, stats)
 
     return file_num
 

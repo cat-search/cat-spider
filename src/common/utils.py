@@ -1,7 +1,12 @@
 import json
+import re
 import time
 from collections.abc import Callable
 from hashlib import md5
+
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
 from markdownify import markdownify as md
 
 from src.common.log import logger
@@ -80,3 +85,47 @@ def write_text_file(file_path: str, data: str, stats: dict) -> str:
         f.write(data)
         stats['fs']['written'] += 1
     return new_filename
+
+
+def preprocess_text(text: str) -> str:
+    """
+    Очистка текста от лишних символов
+    """
+    # Удаление специальных символов
+    text = re.sub(r'[\x00-\x1F\x7F-\x9F]', ' ', text)
+    # Замена множественных пробелов и переносов
+    text = re.sub(r'\s+', ' ', text)
+    # Удаление лишних дефисов в переносах
+    text = re.sub(r'(\w)-\s(\w)', r'\1\2', text)
+    return text.strip()
+
+
+def chunkate_text_ts(text: str) -> list[Document]:
+    """
+    Chunkating with CharacterTextSplitter
+    """
+    logger.info(msg := f"Chunkating text: {len(text)} chars ...")
+    text_splitter = CharacterTextSplitter(
+        chunk_size=settings.text_chunk_size,
+        chunk_overlap=settings.text_chunk_overlap,
+        # separators=settings.text_chunk_separators,
+    )
+    chunks: list[Document]  = text_splitter.create_documents([text])
+    logger.info(f"{msg} done: {len(chunks)} chunks")
+    return chunks
+
+
+def chunkate_text_rcts(text: str) -> list[Document]:
+    """
+    Chunkating with RecursiveCharacterTextSplitter
+    """
+    logger.info(msg := f"Chunkating text: {len(text)} chars ...")
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=settings.text_chunk_size,
+        chunk_overlap=settings.text_chunk_overlap,
+        separators=settings.text_chunk_separators,
+    )
+    chunks: list[Document]  = text_splitter.create_documents([text])
+    logger.info(f"{msg} done: {len(chunks)} chunks")
+    return chunks
+
