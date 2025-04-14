@@ -120,6 +120,7 @@ def weaviate_insert(
     """
     logger.info(msg := f"Inserting {len(texts)} docs into weaviate: {index_name} ...")
     collection: Collection = client.collections.get(index_name)
+    i = 0
     with collection.batch.dynamic() as batch:
         for i, text in enumerate(texts, start=1):
             batch.add_object(
