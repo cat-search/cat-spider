@@ -9,10 +9,10 @@ class Settings(BaseSettings):
     log_level: str                    = 'INFO'
     project_name: str                 = 'cat-spider'
 
-    vk_db_conn_str_cms: str           = 'postgresql://postgres:postgres@localhost:5433/cms'
-    vk_db_conn_str_filestorage: str   = 'postgresql://postgres:postgres@localhost:5433/filestorage'
-    vk_db_conn_str_lists: str         = 'postgresql://postgres:postgres@localhost:5433/lists'
-    db_conn_str: str                  = 'postgresql://postgres:postgres@localhost:5433/catsearch'
+    vk_db_conn_str_cms: str           = 'postgresql://postgres:postgres@pg:5432/cms'
+    vk_db_conn_str_filestorage: str   = 'postgresql://postgres:postgres@pg:5432/filestorage'
+    vk_db_conn_str_lists: str         = 'postgresql://postgres:postgres@pg:5432/lists'
+    db_conn_str: str                  = 'postgresql://postgres:postgres@pg:5432/catsearch'
     alembic_db_name: str              = 'catspider'
 
     mongo_host: str                   = '127.0.0.1'
@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     }
 
     # Vector DB. weaviate
-    weaviate_host: str                  = "cat-vm2.v6.rocks"
+    weaviate_host: str                  = "weaviate"
     weaviate_port: int                  = 8080
     weaviate_api_key: str               = "Hack_the_VK"
     weaviate_collection: str            = "index_20250413"
