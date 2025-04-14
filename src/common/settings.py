@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     # Vector DB. Marqo
     marqo_url: str                      = "http://cat-vm2.v6.rocks:8081"
     marqo_user: str                     = "admin"
-    marqo_api_key: str                  = ""
+    marqo_api_key: str                  = "Hack_the_VK"
     marqo_model: str                    = "hf/e5-base-v2"
     # marqo_model: str                    = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
     marqo_index_page: str               = "page_20250409_valer"
@@ -53,6 +53,21 @@ class Settings(BaseSettings):
             "splitMethod": "sentence",
         },
     }
+
+    # Vector DB. weaviate
+    weaviate_host: str                  = "cat-vm2.v6.rocks"
+    weaviate_port: int                  = 8080
+    weaviate_api_key: str               = "Hack_the_VK"
+    weaviate_collection: str            = "index_20250413"
+    weaviate_api_endpoint: str          = "http://ollama:11434"
+    # Model name. If it's `None`, uses the server-defined default
+    # weaviate_model: str                 = None
+    weaviate_model: str                 = "nomic-embed-text"
+
+    text_chunk_size: int                = 500
+    text_chunk_overlap: int             = 100
+    # text_chunk_separators: tuple        = ("\n\n", "\n", r"(?<=\. )", " ", "")
+    text_chunk_separators: tuple        = ("\n\n", )
 
 
 settings = Settings()

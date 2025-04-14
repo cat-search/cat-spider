@@ -1,5 +1,4 @@
 from pprint import pformat
-
 import marqo
 from src.common.settings import settings
 from src.common.log import logger
