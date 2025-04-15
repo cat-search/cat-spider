@@ -22,7 +22,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry system-wide
+# Install and allow poetry to install packages system-wide
 RUN pip3 --no-cache-dir install poetry --break-system-packages
 # RUN curl -sSL https://install.python-poetry.org | python3 -
 # ENV PATH="/root/.local/bin:$PATH"
@@ -35,8 +35,7 @@ COPY ./alembic.ini              /opt/catsearch/cat-spider
 
 WORKDIR                         /opt/catsearch/cat-spider
 
-# RUN pwd; ls -la; which python; which poetry; sleep 100
-
+# Install packages system-wide
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --no-interaction --no-ansi --compile --only main
 
