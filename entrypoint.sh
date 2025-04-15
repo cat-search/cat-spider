@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TASKS_DIR=src/tasks/pg
+TASKS_DIR=src/tasks
 
 alembic upgrade head
 
