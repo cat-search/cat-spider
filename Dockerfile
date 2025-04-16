@@ -39,7 +39,8 @@ WORKDIR                         /opt/catsearch/cat-spider
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --no-interaction --no-ansi --compile --only main
 
-ENV PYTHONPATH="${PYTHONPATH}:/opt/catsearch/cat-spider"
+#ENV PYTHONPATH="${PYTHONPATH}:/opt/catsearch/cat-spider"
+ENV PYTHONPATH=/opt/catsearch/cat-spider
 
 COPY ./entrypoint.sh            /opt/catsearch/cat-spider/entrypoint.sh
 RUN chmod +x                    /opt/catsearch/cat-spider/entrypoint.sh
