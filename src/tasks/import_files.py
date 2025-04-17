@@ -17,7 +17,7 @@ from src.common.utils import (
 )
 from src.models.cat_meta import SpiderFile, Status
 from src.models.vk_filestorage import StorageObject
-from src.vectordb.weaviate_vdb import init_weaviate, weaviate_insert
+from src.vectordb.weaviate_vdb import init_weaviate, weaviate_insert, check_collection_readiness
 
 
 def parse_doc(file: SpiderFile, stats: dict) -> str:
@@ -155,6 +155,7 @@ def parse(stats: dict) -> int:
 
     # Initialize VectorDB client
     wc = init_weaviate()
+    check_collection_readiness(wc)
 
     with DbConnManager(settings.db_conn_str) as cat_conn:
         sites: dict = {

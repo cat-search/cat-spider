@@ -32,7 +32,7 @@ class SpiderFile(Base):
     status_id                = Column(SMALLINT, default=0, comment='0 - new, 1 - downloaded, 2 - parsed, 3 - vectorized')
 
 
-class Status(str, Enum):
+class Status(int, Enum):
     """ Статусы файлов """
     new         = 0
     downloaded  = 1

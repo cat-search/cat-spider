@@ -4,13 +4,12 @@ from collections import defaultdict
 import requests
 from sqlalchemy import select, and_
 
-from src.common.db import DbConnManager, file_register, file_set_status
+from src.common.db import DbConnManager, file_register, file_set_status, file_get_status
 from src.common.log import logger
-from src.common.mongo import init_mongo
 from src.common.settings import settings
 from src.common.utils import get_stats
-from src.models.vk_filestorage import StorageObject, StorageVersion
 from src.models.cat_meta import Status
+from src.models.vk_filestorage import StorageObject, StorageVersion
 
 
 def download(stats: dict) -> None:
@@ -53,7 +52,10 @@ def download(stats: dict) -> None:
             logger.info(f"{i}, {row.id}, {row.name}, {row.link}")
             url: str = f"{settings.filestorage_url}/{row.link}"
             filename: str = f"{settings.download_dir}/{row.name}"
-            file_register(cat_conn, row, filename, Status.new.value)
+            if not file_register(cat_conn, row, filename, Status.new.value):
+                if file_get_status(cat_conn, row.id) == Status.downloaded:
+                    logger.info(f"{i}: File already downloaded: {filename} ")
+                    continue
 
             # download file
             with requests.session() as session:

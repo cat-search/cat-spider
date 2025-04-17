@@ -4,6 +4,7 @@ from collections.abc import Iterable
 
 from sqlalchemy import create_engine, Row
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Query, Session, sessionmaker
 from sqlalchemy.sql import Delete, select
 
@@ -51,7 +52,7 @@ def file_register(
         data: StorageObject | StorageVersion,
         filename: str,
         status_id: int
-) -> None:
+) -> bool:
     with DbConnManager(conn.conn_str) as conn:
         # StorageObject.id,
         # StorageObject.name,                # filename
@@ -74,7 +75,13 @@ def file_register(
                 status_id=status_id,
             )
         )
-        conn.commit()
+        try:
+            conn.commit()
+            return True
+        except IntegrityError as e:
+            # Let's assume that record exists
+            logger.info(f"Already registered: {filename}")
+            return False
 
 
 def file_set_status(conn: DbConnManager, file_id: str, status_id: int) -> None:
@@ -83,6 +90,14 @@ def file_set_status(conn: DbConnManager, file_id: str, status_id: int) -> None:
             {SpiderFile.status_id: status_id}
         )
         conn.commit()
+
+
+def file_get_status(conn: DbConnManager, file_id: str) -> int:
+    with DbConnManager(conn.conn_str) as conn:
+        res = conn.session.query(SpiderFile).filter(
+            SpiderFile.storage_object_id == file_id
+        ).first()
+        return res.status_id
 
 
 def get_sites(full: bool = True) -> Iterable[Row]:

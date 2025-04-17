@@ -27,6 +27,10 @@ RUN pip3 --no-cache-dir install poetry --break-system-packages
 # RUN curl -sSL https://install.python-poetry.org | python3 -
 # ENV PATH="/root/.local/bin:$PATH"
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    antiword
+
 RUN mkdir -p                    /opt/catsearch/cat-spider
 
 COPY ./pyproject.toml           /opt/catsearch/cat-spider
