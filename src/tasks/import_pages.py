@@ -9,7 +9,6 @@ from src.common.log import logger
 from src.common.mongo import init_mongo
 from src.common.settings import settings
 from src.common.utils import get_stats, prepare_doc, decode_html2text
-from src.vectordb.marqo_vdb import init_marqo
 from src.models.vk_cms import SiteServiceObject, Page, Site
 
 
@@ -46,8 +45,9 @@ def import_page(stats: dict) -> None:
         coll = init_mongo(settings.mongo_collection_page)
 
         # Initialize VectorDB client
-        mq = init_marqo(settings.marqo_index_page)
-        idx = mq.index(settings.marqo_index_page)
+        # mq = init_marqo(settings.marqo_index_page)
+        # idx = mq.index(settings.marqo_index_page)
+        # TODO: weaviate
 
         # Iterate over rows
         for i, row in enumerate(conn.execute(query).yield_per(settings.chunk_size)):

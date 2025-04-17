@@ -69,5 +69,8 @@ class Settings(BaseSettings):
     # text_chunk_separators: tuple        = ("\n\n", "\n", r"(?<=\. )", " ", "")
     text_chunk_separators: tuple        = ("\n\n", )
 
+    db_startup_check_interval: int      = 10
+    vdb_startup_check_interval: int     = 10
+
 
 settings = Settings()

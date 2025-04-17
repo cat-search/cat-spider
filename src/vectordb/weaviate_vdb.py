@@ -1,4 +1,5 @@
 import uuid
+import time
 
 from langchain_core.documents import Document
 from weaviate import WeaviateClient
@@ -137,3 +138,50 @@ def weaviate_insert(
         stats['vectordb']['weaviate_inserted'] = i
         logger.info(f"{msg} done: {i}")
         return i
+
+
+def check_collection_readiness(
+        client: WeaviateClient, index_name: str = settings.weaviate_collection
+):
+    new_uuid = str(uuid.uuid4())
+    doc_attrs = {
+        # '_id'               : f"{file.storage_object_id}",
+        'object_id'     : new_uuid,
+        'type'          : None,
+        'name'          : None,
+        'site_id'       : None,
+        'site_name'     : None,
+        'size'          : None,
+        'created_at'    : None,
+        'created_by_id' : None,
+        'updated_at'    : None,
+        'updated_by_id' : None,
+        'link'          : None,
+    }
+    logger.info(msg := f"Checking if we able to insert into: {index_name} ...")
+    collection: Collection = client.collections.get(index_name)
+    properties = {
+        "uuid": new_uuid,
+        "content": "test",
+        "chunk_id": 1,
+        **doc_attrs,
+    }
+
+    while True:
+        msg = ""
+        try:
+            # Check insert
+            res_uuid = collection.data.insert(properties=properties)
+            # Check query by uuid
+            document = collection.query.fetch_object_by_id(res_uuid)
+            if document is not None:
+                break
+        except Exception as e:  # We will fall here when ollama model hasn't pulled
+            msg = str(e)
+            pass
+        logger.error(f"Failed to insert: {msg}. Sleeping ...")
+        time.sleep(10)
+
+    collection.data.delete_by_id(res_uuid)
+    logger.info(f"{msg} done: OK")
+
