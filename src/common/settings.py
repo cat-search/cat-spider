@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     # Vector DB. weaviate
     weaviate_host: str                  = "weaviate"
     weaviate_port: int                  = 8080
-    weaviate_api_key: str               = "Hack_the_VK"
+    weaviate_api_key: str               = "Search_the_VK"
     weaviate_collection: str            = "index_20250413"
     weaviate_api_endpoint: str          = "http://ollama:11434"
     # Model name. If it's `None`, uses the server-defined default
