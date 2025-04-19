@@ -9,10 +9,10 @@ class Settings(BaseSettings):
     log_level: str                    = 'INFO'
     project_name: str                 = 'cat-spider'
 
-    vk_db_conn_str_cms: str           = 'postgresql://postgres:Oue$8AriEOdN@pg:5433/cms'
-    vk_db_conn_str_filestorage: str   = 'postgresql://postgres:Oue$8AriEOdN@pg:5433/filestorage'
-    vk_db_conn_str_lists: str         = 'postgresql://postgres:Oue$8AriEOdN@pg:5433/lists'
-    db_conn_str: str                  = 'postgresql://postgres:Oue$8AriEOdN@pg:5433/catsearch'
+    vk_db_conn_str_cms: str           = 'postgresql://postgres:Oue$8AriEOdN@pg:5432/cms'
+    vk_db_conn_str_filestorage: str   = 'postgresql://postgres:Oue$8AriEOdN@pg:5432/filestorage'
+    vk_db_conn_str_lists: str         = 'postgresql://postgres:Oue$8AriEOdN@pg:5432/lists'
+    db_conn_str: str                  = 'postgresql://postgres:Oue$8AriEOdN@pg:5432/catsearch'
     alembic_db_name: str              = 'catspider'
 
     mongo_host: str                   = '127.0.0.1'
