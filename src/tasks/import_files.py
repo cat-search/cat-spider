@@ -211,13 +211,12 @@ def parse(stats: dict) -> int:
             # 4. Chunkate
             text_chunks: list[Document] = chunkate_text_rcts(content)
             doc_attrs = {
-                # '_id'               : f"{file.storage_object_id}",
                 'object_id'         : file.storage_object_id,
                 'type'              : 'file',
                 'name'              : file.storage_object_name,
                 'site_id'           : file.storage_object_site_id,
                 'site_name'         : sites[file.storage_object_site_id],
-                'size'              : str(so_attrs.size),
+                'size'              : so_attrs.size,
                 'created_at'        : so_attrs.created_at,
                 'created_by_id'     : str(so_attrs.created_by_id),
                 'updated_at'        : so_attrs.updated_at,
