@@ -217,11 +217,11 @@ def parse(stats: dict) -> int:
                 'name'              : file.storage_object_name,
                 'site_id'           : file.storage_object_site_id,
                 'site_name'         : sites[file.storage_object_site_id],
-                'size'              : so_attrs.size,
+                'size'              : str(so_attrs.size),
                 'created_at'        : so_attrs.created_at,
-                'created_by_id'     : so_attrs.created_by_id,
+                'created_by_id'     : str(so_attrs.created_by_id),
                 'updated_at'        : so_attrs.updated_at,
-                'updated_by_id'     : so_attrs.updated_by_id,
+                'updated_by_id'     : str(so_attrs.updated_by_id),
                 'link'              : make_storage_url(file.storage_version_link),
             }
 

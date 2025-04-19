@@ -135,7 +135,7 @@ def weaviate_insert(
         if batch.number_errors > 1:
             logger.error(msg := f"Weaviate batch insert errors: {batch.number_errors}")
             raise AssertionError(msg)
-        stats['vectordb']['weaviate_inserted'] = i
+        stats['vectordb']['weaviate_inserted'] += i
         logger.info(f"{msg} done: {i}")
         return i
 
