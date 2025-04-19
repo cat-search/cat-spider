@@ -77,11 +77,11 @@ def create_collection(
                         # 'created_at'    : so_attrs.created_at,
                         Property(name="created_at", data_type=DataType.DATE),
                         # 'created_by_id' : so_attrs.created_by_id,
-                        Property(name="created_at", data_type=DataType.TEXT),
+                        Property(name="created_by_id", data_type=DataType.INT),
                         # 'updated_at'    : so_attrs.updated_at,
                         Property(name="updated_at", data_type=DataType.DATE),
                         # 'updated_by_id' : so_attrs.updated_by_id,
-                        Property(name="updated_by_id", data_type=DataType.TEXT),
+                        Property(name="updated_by_id", data_type=DataType.INT),
                         # 'link'          : make_storage_url(file.storage_version_link),
                         Property(name="link", data_type=DataType.TEXT),
                     ]
@@ -133,7 +133,7 @@ def weaviate_insert(
                 }
             )
         if batch.number_errors > 1:
-            logger.error(msg := f"Weaviate batch insert errors: {i}")
+            logger.error(msg := f"Weaviate batch insert errors: {batch.number_errors}")
             raise AssertionError(msg)
         stats['vectordb']['weaviate_inserted'] = i
         logger.info(f"{msg} done: {i}")
