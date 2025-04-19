@@ -9,10 +9,10 @@ class Settings(BaseSettings):
     log_level: str                    = 'INFO'
     project_name: str                 = 'cat-spider'
 
-    vk_db_conn_str_cms: str           = 'postgresql://postgres:postgres@pg:5432/cms'
-    vk_db_conn_str_filestorage: str   = 'postgresql://postgres:postgres@pg:5432/filestorage'
-    vk_db_conn_str_lists: str         = 'postgresql://postgres:postgres@pg:5432/lists'
-    db_conn_str: str                  = 'postgresql://postgres:postgres@pg:5432/catsearch'
+    vk_db_conn_str_cms: str           = 'postgresql://postgres:Oue$8AriEOdN@pg:5433/cms'
+    vk_db_conn_str_filestorage: str   = 'postgresql://postgres:Oue$8AriEOdN@pg:5433/filestorage'
+    vk_db_conn_str_lists: str         = 'postgresql://postgres:Oue$8AriEOdN@pg:5433/lists'
+    db_conn_str: str                  = 'postgresql://postgres:Oue$8AriEOdN@pg:5433/catsearch'
     alembic_db_name: str              = 'catspider'
 
     mongo_host: str                   = '127.0.0.1'
@@ -40,25 +40,26 @@ class Settings(BaseSettings):
     download_dir: str                   = '/opt/catsearch/download'
 
     # Vector DB. Marqo
-    marqo_url: str                      = "http://cat-vm2.v6.rocks:8081"
-    marqo_user: str                     = "admin"
-    marqo_api_key: str                  = "Hack_the_VK"
-    marqo_model: str                    = "hf/e5-base-v2"
-    # marqo_model: str                    = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
-    marqo_index_page: str               = "page_20250409_valer"
-    marqo_index_settings: dict          = {
-        "textPreprocessing": {
-            "splitLength": 2,
-            "splitOverlap": 0,
-            "splitMethod": "sentence",
-        },
-    }
+    # marqo_url: str                      = "http://cat-vm2.v6.rocks:8081"
+    # marqo_user: str                     = "admin"
+    # marqo_api_key: str                  = "Hack_the_VK"
+    # marqo_model: str                    = "hf/e5-base-v2"
+    # # marqo_model: str                    = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+    # marqo_index_page: str               = "page_20250409_valer"
+    # marqo_index_settings: dict          = {
+    #     "textPreprocessing": {
+    #         "splitLength": 2,
+    #         "splitOverlap": 0,
+    #         "splitMethod": "sentence",
+    #     },
+    # }
 
     # Vector DB. weaviate
     weaviate_host: str                  = "weaviate"
+    # weaviate_host: str                  = "localhost"
     weaviate_port: int                  = 8080
     weaviate_api_key: str               = "Search_the_VK"
-    weaviate_collection: str            = "index_20250413"
+    weaviate_collection: str            = "catsearch"
     weaviate_api_endpoint: str          = "http://ollama:11434"
     # Model name. If it's `None`, uses the server-defined default
     # weaviate_model: str                 = None
