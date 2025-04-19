@@ -5,6 +5,7 @@ import PyPDF2
 import pandas as pd
 from langchain_core.documents import Document
 from sqlalchemy import select
+from weaviate.client import WeaviateClient
 
 from src.common.db import DbConnManager, get_sites, get_storage_object
 from src.common.log import logger
@@ -154,10 +155,16 @@ def parse(stats: dict) -> int:
     # coll = init_mongo(settings.mongo_collection_file)
 
     # Initialize VectorDB client
-    wc = init_weaviate()
-    check_collection_readiness(wc)
+    # wc: WeaviateClient = init_weaviate()
+    # check_collection_readiness(wc)
 
-    with DbConnManager(settings.db_conn_str) as cat_conn:
+    wc: WeaviateClient
+    with (
+        DbConnManager(settings.db_conn_str) as cat_conn,
+        init_weaviate() as wc
+    ):
+        check_collection_readiness(wc)
+
         sites: dict = {
             str(item.id): item.name for item in get_sites(full=False)
         }
@@ -224,8 +231,6 @@ def parse(stats: dict) -> int:
 
             # 6. Insert doc into MongoDB
             # mongo_insert(coll, text_chunks, stats)
-
-    return file_num
 
 
 @logger.catch(reraise=True)

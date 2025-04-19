@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import (
     ARRAY,
     BIGINT,
 )
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 
 from src.models.base import ModelBase
