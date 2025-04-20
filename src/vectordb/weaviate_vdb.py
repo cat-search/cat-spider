@@ -15,6 +15,9 @@ from src.common.settings import settings
 
 def init_weaviate() -> WeaviateClient:
     """ Инициализация подключения """
+    logger.info(
+        msg := f"Initializing weaviate client: {settings.weaviate_host}:{settings.weaviate_port} ..."
+    )
     client: WeaviateClient = weaviate_connect_to_local(
         host=settings.weaviate_host,  # Use a string to specify the host
         port=settings.weaviate_port,
@@ -27,7 +30,16 @@ def init_weaviate() -> WeaviateClient:
         raise AssertionError(msg)
 
     create_collection(client, settings.weaviate_collection)
+    logger.info(f"{msg} done")
     return client
+
+
+def delete_collection(
+        client: WeaviateClient, collection_name: str = settings.weaviate_collection,
+):
+    logger.info(msg := f"Deleting collection: {collection_name} ...")
+    client.collections.delete(collection_name)
+    logger.info(f"{msg} done: OK")
 
 
 def create_collection(
@@ -42,8 +54,8 @@ def create_collection(
 
     # Check if collection exists in weaviate
     if client.collections.exists(collection_name):
-        logger.info(f"Collection {collection_name} already exists: OK")
-        return
+        logger.warning(f"Collection {collection_name} already exists")
+        delete_collection(client, collection_name)
 
     try:
         collection: Collection = client.collections.create(
@@ -94,6 +106,7 @@ def create_collection(
                     model=settings.weaviate_model,
                 ),
             ],
+            # inverted_index_config=
         )
         logger.info(f"{msg} done")
     except Exception as e:
@@ -106,6 +119,7 @@ def weaviate_insert(
         doc_attrs: dict,
         stats: dict,
         index_name: str = settings.weaviate_collection,
+        file_name: str = None,
 ):
     """
     Insert multiple documents into weaviate collection.
@@ -125,6 +139,58 @@ def weaviate_insert(
                     **doc_attrs,
                 }
             )
+
+            # Chunk statistics calculation
+            chunk_len = (len(text.page_content) // 50) * 50
+            stats['vectordb']['chunk'][chunk_len] += 1
+            if chunk_len < 100:
+                stats['file'][file_name]['chunk_len<100'] += 1
+            elif chunk_len > 1000:
+                stats['file'][file_name]['chunk_len>1000'] += 1
+
+        if batch.number_errors > 1:
+            logger.error(msg := f"Weaviate batch insert errors: {batch.number_errors}")
+            raise AssertionError(msg)
+        stats['vectordb']['weaviate_inserted'] += i
+        logger.info(f"{msg} done: {i}")
+        return i
+
+
+def weaviate_insert_plain(
+        client: WeaviateClient,
+        texts: list[str],
+        doc_attrs: dict,
+        stats: dict,
+        index_name: str = settings.weaviate_collection,
+        file_name: str = None,
+):
+    """
+    Insert multiple documents into weaviate collection.
+
+    We use native create() because we use multiple vector fields.
+    Langchain supports only one vector field (property).
+    """
+    logger.info(msg := f"Inserting {len(texts)} docs into weaviate: {index_name} ...")
+    collection: Collection = client.collections.get(index_name)
+    i = 0
+    with collection.batch.dynamic() as batch:
+        for i, text in enumerate(texts, start=1):
+            batch.add_object(
+                properties={
+                    "content": text,
+                    "chunk_id": i,
+                    **doc_attrs,
+                }
+            )
+
+            # Chunk statistics calculation
+            chunk_len = (len(text) // 50) * 50
+            stats['vectordb']['chunk'][chunk_len] += 1
+            if chunk_len < 100:
+                stats['file'][file_name]['chunk_len<100'] += 1
+            elif chunk_len > 1000:
+                stats['file'][file_name]['chunk_len>1000'] += 1
+
         if batch.number_errors > 1:
             logger.error(msg := f"Weaviate batch insert errors: {batch.number_errors}")
             raise AssertionError(msg)
