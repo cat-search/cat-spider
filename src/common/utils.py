@@ -6,6 +6,7 @@ from hashlib import md5
 
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import NLTKTextSplitter
 from langchain_core.documents import Document
 from markdownify import markdownify as md
 
@@ -120,12 +121,33 @@ def chunkate_text_rcts(text: str) -> list[Document]:
     Chunkating with RecursiveCharacterTextSplitter
     """
     logger.info(msg := f"Chunkating text: {len(text)} chars ...")
+
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=settings.text_chunk_size,
         chunk_overlap=settings.text_chunk_overlap,
         separators=settings.text_chunk_separators,
     )
     chunks: list[Document]  = text_splitter.create_documents([text])
+
     logger.info(f"{msg} done: {len(chunks)} chunks")
     return chunks
+
+
+def chunkate_text_rcts_plain(text: str) -> list[str]:
+    """
+    Chunkating with RecursiveCharacterTextSplitter
+    """
+    logger.info(msg := f"Chunkating text: {len(text)} chars ...")
+
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=settings.text_chunk_size,
+        chunk_overlap=settings.text_chunk_overlap,
+        separators=settings.text_chunk_separators,
+    )
+    chunks: list[str]  = text_splitter.split_text(text)
+
+    logger.info(f"{msg} done: {len(chunks)} chunks")
+    return [
+        chunk for chunk in chunks if len(chunk) >= settings.text_chunk_min_size
+    ]
 
