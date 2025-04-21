@@ -62,8 +62,9 @@ class Settings(BaseSettings):
     weaviate_collection: str            = "catsearch"
     weaviate_api_endpoint: str          = "http://ollama:11434"
     # Model name. If it's `None`, uses the server-defined default
-    # weaviate_model: str                 = None
-    weaviate_model: str                 = "nomic-embed-text"
+    weaviate_model: str                 = "no-default-model-use-env-to-setup"
+    # weaviate_model: str                 = "nomic-embed-text"
+    # weaviate_model: str                 = "jeffh/intfloat-multilingual-e5-large:f16"
 
     text_chunk_size: int                = 700
     text_chunk_overlap: int             = 100
