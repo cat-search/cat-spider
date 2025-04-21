@@ -57,6 +57,12 @@ def create_collection(
         logger.warning(f"Collection {collection_name} already exists")
         delete_collection(client, collection_name)
 
+    logger.info(
+        f"Collection params:"
+        f"\nname: {collection_name}"
+        f"\napi endpoint: {settings.weaviate_api_endpoint}"
+        f"\nmodel: {settings.weaviate_model}"
+    )
     try:
         collection: Collection = client.collections.create(
             collection_name,
