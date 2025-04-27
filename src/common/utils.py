@@ -34,7 +34,13 @@ def get_stats(
     stats_json = json.dumps(
         stats, indent=indent, sort_keys=sort_keys, ensure_ascii=ensure_ascii
     )
-    return f"Statistics:\n{stats_json}"
+    inserted: int | None = stats.get('vectordb', {}).get('weaviate_inserted_size', None)
+    skipped : int | None = stats.get('vectordb', {}).get('weaviate_skipped_size', None)
+    if inserted is not None and skipped is not None:
+        coverage: float | None = inserted / (inserted + skipped)
+    else:
+        coverage = None
+    return f"Statistics:\n{stats_json}\nData coverage: {coverage}"
 
 
 def timeit(func) -> Callable:
@@ -63,7 +69,10 @@ def decode_html2text(html_text: str) -> str:
     """
     # soup = BeautifulSoup(html_text, "lxml")
     # plain_text = soup.get_text(separator='\n', strip=True)
-    result_text = md(html_text)  # HTML to Markdown
+    result_text = md(
+        html_text,
+        heading_style="ATX",  # # Head
+    )  # HTML to Markdown
     return result_text
 
 
@@ -133,10 +142,15 @@ def chunkate_text_rcts(text: str) -> list[Document]:
     return chunks
 
 
-def chunkate_text_rcts_plain(text: str) -> list[str]:
+def chunkate_text_rcts_plain(text: str, stats: dict) -> list[str]:
     """
     Chunkating with RecursiveCharacterTextSplitter
     """
+    def custom_len(s: str) -> int:
+        if len(s) < settings.text_chunk_min_size:
+            stats['tiny'] += 1
+        return len(s)
+
     logger.info(msg := f"Chunkating text: {len(text)} chars ...")
 
     text_splitter = RecursiveCharacterTextSplitter(
@@ -147,7 +161,8 @@ def chunkate_text_rcts_plain(text: str) -> list[str]:
     chunks: list[str]  = text_splitter.split_text(text)
 
     logger.info(f"{msg} done: {len(chunks)} chunks")
-    return [
-        chunk for chunk in chunks if len(chunk) >= settings.text_chunk_min_size
-    ]
+    return chunks
+    # return [
+    #     chunk for chunk in chunks if custom_len(chunk) >= settings.text_chunk_min_size
+    # ]
 
