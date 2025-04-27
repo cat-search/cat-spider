@@ -79,6 +79,7 @@ def import_page(stats: dict) -> None:
                 wc, text_chunks, doc_attrs, stats, object_name=object_name,
             )
             stats['source_object'][object_name]['vectordb_inserted'] += count
+            stats['source_object'][object_name]['site_name'] = row.site_name
 
 
 @logger.catch(reraise=True)

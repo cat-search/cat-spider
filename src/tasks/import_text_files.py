@@ -74,15 +74,15 @@ def load_text_files(stats: dict) -> int:
             # 1. Get filename
             file_name: str = file.name + '.txt'
             file_path: str = f"{settings.download_dir}/{file_name}"
-            stats['file'][file_name] = defaultdict(int)
+            stats['source_object'][file_name] = defaultdict(int)
 
             # 2. Read file .txt
-            content = read_text_file(file_path, stats['file'][file_name])
+            content = read_text_file(file_path, stats['source_object'][file_name])
             if not content:
                 continue
 
             # 4. Chunkate
-            text_chunks: list[str] = chunkate_text_rcts_plain(content)
+            text_chunks: list[str] = chunkate_text_rcts_plain(content, stats['vectordb']['chunk'])
             doc_attrs = {
                 'object_id': file.id,
                 'type': 'file',
@@ -99,9 +99,10 @@ def load_text_files(stats: dict) -> int:
 
             # 5. Insert into vector DB
             count: int = weaviate_insert_plain(
-                wc, text_chunks, doc_attrs, stats, file_name=file_name
+                wc, text_chunks, doc_attrs, stats, object_name=file_name
             )
-            stats['file'][file_name]['vectordb_inserted'] += count
+            stats['source_object'][file_name]['vectordb_inserted'] += count
+            stats['source_object'][file_name]['site_name'] = sites[str(file.site_id)]
 
             # 6. Insert doc into MongoDB
             # mongo_insert(coll, text_chunks, stats)
@@ -114,7 +115,7 @@ def main():
     # Statistics
     stats: dict = {
         'vectordb': defaultdict(int),  # Inserts into vector db
-        'file': defaultdict(int),  # Individual file statistics
+        'source_object': defaultdict(int),
     }
     stats['vectordb']['chunk'] = defaultdict(int)
 
