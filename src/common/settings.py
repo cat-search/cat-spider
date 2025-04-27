@@ -1,5 +1,6 @@
-from pydantic import computed_field
-from pydantic_settings import BaseSettings
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -75,6 +76,12 @@ class Settings(BaseSettings):
 
     db_startup_check_interval: int      = 10
     vdb_startup_check_interval: int     = 10
+
+    # Ability to read variables from .env
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).parent.parent.parent / '.env',
+        env_file_encoding='utf-8',
+    )
 
 
 settings = Settings()
