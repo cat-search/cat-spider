@@ -37,6 +37,10 @@ def init_weaviate() -> WeaviateClient:
 def delete_collection(
         client: WeaviateClient, collection_name: str = settings.weaviate_collection,
 ):
+    if not client.collections.exists(collection_name):
+        logger.info(f"Collection {collection_name} doesnt exists")
+        return
+
     logger.info(msg := f"Deleting collection: {collection_name} ...")
     client.collections.delete(collection_name)
     logger.info(f"{msg} done: OK")
@@ -54,8 +58,8 @@ def create_collection(
 
     # Check if collection exists in weaviate
     if client.collections.exists(collection_name):
-        logger.warning(f"Collection {collection_name} already exists")
-        delete_collection(client, collection_name)
+        logger.info(f"Collection {collection_name} already exists")
+        return
 
     logger.info(
         f"Collection params:"
@@ -168,41 +172,48 @@ def weaviate_insert_plain(
         doc_attrs: dict,
         stats: dict,
         index_name: str = settings.weaviate_collection,
-        file_name: str = None,
+        object_name: str = None,
 ):
     """
     Insert multiple documents into weaviate collection.
-
-    We use native create() because we use multiple vector fields.
-    Langchain supports only one vector field (property).
     """
     logger.info(msg := f"Inserting {len(texts)} docs into weaviate: {index_name} ...")
     collection: Collection = client.collections.get(index_name)
-    i = 0
+    inserted_count: int = 0  # Inserted
+    min_size: int = settings.text_chunk_min_size
     with collection.batch.dynamic() as batch:
         for i, text in enumerate(texts, start=1):
-            batch.add_object(
-                properties={
-                    "content": text,
-                    "chunk_id": i,
-                    **doc_attrs,
-                }
-            )
-
             # Chunk statistics calculation
             chunk_len = (len(text) // 50) * 50
             stats['vectordb']['chunk'][chunk_len] += 1
-            if chunk_len < 100:
-                stats['file'][file_name]['chunk_len<100'] += 1
+            if chunk_len < min_size:
+                stats['source_object'][object_name][f'chunk_len<{min_size}'] += 1
             elif chunk_len > 1000:
-                stats['file'][file_name]['chunk_len>1000'] += 1
+                stats['source_object'][object_name]['chunk_len>1000'] += 1
+
+            # Insert
+            if len(text) >= min_size:
+                batch.add_object(
+                    properties={
+                        "content": text,
+                        "chunk_id": i,
+                        **doc_attrs,
+                    }
+                )
+                inserted_count += 1
+                stats['vectordb']['weaviate_inserted'] += 1
+                stats['vectordb']['weaviate_inserted_size'] += len(text)
+            else:
+                stats['vectordb']['weaviate_skipped'] += 1
+                stats['vectordb']['weaviate_skipped_size'] += len(text)
+                continue
 
         if batch.number_errors > 1:
             logger.error(msg := f"Weaviate batch insert errors: {batch.number_errors}")
             raise AssertionError(msg)
-        stats['vectordb']['weaviate_inserted'] += i
+
         logger.info(f"{msg} done: {i}")
-        return i
+        return inserted_count
 
 
 def check_collection_readiness(
